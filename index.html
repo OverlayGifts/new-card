@@ -1,0 +1,80 @@
+<html>
+  <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/gh/donmccurdy/aframe-extras@v7.0.0/dist/aframe-extras.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/mind-ar@1.2.5/dist/mindar-image-aframe.prod.js"></script>
+    <style>
+      #playButton {
+        display: none; /* Hides the button from view */
+      }
+      /* Hide the VR button */
+      .a-enter-vr-button {
+        display: none !important;
+      }
+    </style>
+  </head>
+  <body>
+    <a-scene mindar-image="imageTargetSrc: targets.mind;" 
+             color-space="sRGB" 
+             renderer="colorManagement: true, physicallyCorrectLights" 
+             vr-mode-ui="enabled: false" 
+             device-orientation-permission-ui="enabled: false">
+      
+      <a-assets>
+        <!-- Load video file for a single image target -->
+        <video id="video1" src="vid2.mp4" crossorigin="anonymous" playsinline loop></video>
+      </a-assets>
+
+      <a-camera position="0 0 0" look-controls="enabled: false"></a-camera>
+
+      <!-- Single Image Target -->
+      <a-entity mindar-image-target="targetIndex: 0" id="target1">
+        <a-video src="#video1" position="0 0 0" rotation="0 0 0" scale="1 .80 1" width="1" height="0.80"></a-video>
+      </a-entity>
+      
+    </a-scene>
+
+    <!-- Play/Pause Button (Hidden) -->
+    <button id="playButton">Play Video</button>
+
+    <script>
+      const video1 = document.querySelector('#video1');
+      const playButton = document.querySelector('#playButton');
+      let isPlaying = false;
+      let currentVideo = null;
+
+      // Function to update current video based on target visibility
+      const updateCurrentVideo = () => {
+        const target1 = document.querySelector('#target1');
+        const target1Active = target1.components['mindar-image-target'].el.object3D.visible;
+
+        if (target1Active) {
+          switchVideo(video1);
+        } else {
+          if (currentVideo) {
+            currentVideo.pause();
+            playButton.innerText = "Play Video";
+            isPlaying = false;
+            currentVideo = null; // Reset currentVideo
+          }
+        }
+      };
+
+      // Helper function to switch videos
+      const switchVideo = (newVideo) => {
+        if (currentVideo !== newVideo) {
+          if (currentVideo) currentVideo.pause(); // Pause the previous video
+          currentVideo = newVideo;
+          currentVideo.play(); // Play the new video
+          currentVideo.muted = false;
+          playButton.innerText = "Pause Video";
+          isPlaying = true;
+        }
+      };
+
+      // Continuously check target visibility
+      setInterval(updateCurrentVideo, 500); // Check every half second
+    </script>
+  </body>
+</html>
